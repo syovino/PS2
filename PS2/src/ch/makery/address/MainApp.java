@@ -20,8 +20,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ch.makery.address.model.*;
+import ch.makery.address.view.BirthdayStatisticsController;
 import ch.makery.address.view.PersonEditDialogController;
 import ch.makery.address.view.PersonOverviewController;
+import ch.makery.address.view.RootLayoutController;
 
 public class MainApp extends Application {
 
@@ -75,20 +77,32 @@ public class MainApp extends Application {
      * Initializes the root layout.
      */
     public void initRootLayout() {
-        try {
-            // Load root layout from fxml file.
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(MainApp.class.getResource("view/RootLayout.fxml"));
-            rootLayout = (BorderPane) loader.load();
+    	 try {
+    	        // Load root layout from fxml file.
+    	        FXMLLoader loader = new FXMLLoader();
+    	        loader.setLocation(MainApp.class
+    	                .getResource("view/RootLayout.fxml"));
+    	        rootLayout = (BorderPane) loader.load();
 
-            // Show the scene containing the root layout.
-            Scene scene = new Scene(rootLayout);
-            primaryStage.setScene(scene);
-            primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    	        // Show the scene containing the root layout.
+    	        Scene scene = new Scene(rootLayout);
+    	        primaryStage.setScene(scene);
+
+    	        // Give the controller access to the main app.
+    	        RootLayoutController controller = loader.getController();
+    	        controller.setMainApp(this);
+
+    	        primaryStage.show();
+    	    } catch (IOException e) {
+    	        e.printStackTrace();
+    	    }
+
+    	    // Try to load last opened person file.
+    	    File file = getPersonFilePath();
+    	    if (file != null) {
+    	        loadPersonDataFromFile(file);
+    	    }
+    	}
 
     /**
      * Shows the person overview inside the root layout.
@@ -250,6 +264,33 @@ public class MainApp extends Application {
         }
     }
 
+    /**
+     * Opens a dialog to show birthday statistics.
+     */
+    public void showBirthdayStatistics() {
+        try {
+            // Load the fxml file and create a new stage for the popup.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainApp.class.getResource("view/BirthdayStatistics.fxml"));
+            AnchorPane page = (AnchorPane) loader.load();
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Birthday Statistics");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Set the persons into the controller.
+            BirthdayStatisticsController controller = loader.getController();
+            controller.setPersonData(personData);
+
+            dialogStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     /**
      * Returns the main stage.
      * @return
